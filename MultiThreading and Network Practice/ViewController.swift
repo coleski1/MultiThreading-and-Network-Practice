@@ -34,25 +34,28 @@ class ViewController: UIViewController {
     
     
     @IBAction func imageLoader(_ sender: UIButton) {
-        let session = URLSession(configuration: .default)
-        let getImageFromURL = session.dataTask(with: scriptURL!) { (data, response, error) in
-            if let e = error {
-                print("Error occured: \(e)")
-            } else {
-                if (response as? HTTPURLResponse) != nil {
-                    if let imageData = data {
-                        let tempImage = UIImage(data: imageData)
-                        
-                        self.image.image = tempImage
-                    } else {
-                        print("corrupt file")
-                    }
+        DispatchQueue.global(qos: .userInitiated).async {
+            let session = URLSession(configuration: .default)
+            let getImageFromURL = session.dataTask(with: self.scriptURL!) { (data, response, error) in
+                if let e = error {
+                    print("Error occured: \(e)")
                 } else {
-                    print("server isn't responding")
+                    if (response as? HTTPURLResponse) != nil {
+                        if let imageData = data {
+                            let tempImage = UIImage(data: imageData)
+                            DispatchQueue.main.async{
+                                self.image.image = tempImage
+                            }
+                        } else {
+                            print("corrupt file")
+                        }
+                    } else {
+                        print("server isn't responding")
+                    }
                 }
             }
+            getImageFromURL.resume()
         }
-        getImageFromURL.resume()
     }
     @IBOutlet weak var image: UIImageView!
 }
