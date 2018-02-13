@@ -10,16 +10,50 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+    @IBAction func generateNumbers(_ sender: UIButton) {
+        var lowestNum = Int.max
+        DispatchQueue.global(qos: .userInitiated).async {
+            var count = 0
+            var randomNumbers:[Int] = []
+            while count < 10000000 {
+                count+=1
+                let randomNum = Int(arc4random_uniform(UInt32.max))
+                randomNumbers.append(randomNum)
+            }
+            for x in randomNumbers {
+                if x <= lowestNum {
+                    lowestNum = x
+                }
+            }
+            DispatchQueue.main.async {
+                sender.setTitle(String(lowestNum), for: .normal)
+            }
+        }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    let scriptURL = URL(string:"http://downloads.nest.com/nest_logo.png")
+    
+    
+    @IBAction func imageLoader(_ sender: UIButton) {
+        let session = URLSession(configuration: .default)
+        let getImageFromURL = session.dataTask(with: scriptURL!) { (data, response, error) in
+            if let e = error {
+                print("Error occured: \(e)")
+            } else {
+                if (response as? HTTPURLResponse) != nil {
+                    if let imageData = data {
+                        let tempImage = UIImage(data: imageData)
+                        
+                        self.image.image = tempImage
+                    } else {
+                        print("corrupt file")
+                    }
+                } else {
+                    print("server isn't responding")
+                }
+            }
+        }
+        getImageFromURL.resume()
     }
-
-
+    @IBOutlet weak var image: UIImageView!
 }
 
